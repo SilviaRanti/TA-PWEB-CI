@@ -1,168 +1,110 @@
-<?php
-    class Data_barang extends CI_Controller{
-        public function __construct(){
-            parent::__construct();
-            // Konfigurasi sesion 
-            if($this->session->userdata('role_id')!='1'){
-                $this->session->set_flashdata('pesan','<div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>Anda Belum login !</strong> 
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
+<div class="container-fluid">
+    <h3 class="mb-3"><i class="fas fa-shopping-basket"></i> Katalog Data Produk</h3>
+    <hr />
+    <div class="row">
+        <div class="col">
+            <button class="btn btn-info " data-toggle="modal" data-target="#tambahbarang"><i class="fas fa-plus fa-sm"></i> Tambah Produk</button>
+            <a href="<?php echo base_url() . 'admin/data_barang/cetakpdf'; ?>" class="btn btn-secondary"><i class="fas fa-file-pdf fa-sm"></i> Export PDF</a>
+          
+        </div>
+        <div class="col">
+            <?php echo form_open('admin/data_barang/cari'); ?>
+            <div class="input-group">
+                <input type="text" class="form-control" name="katakunci" placeholder="Ketik yang anda cari...">
+                <div class="input-group-append">
+                    <button class="btn btn-warning" type="submit">Cari</button>
+                </div>
+            </div>
+        <?php echo form_close(); ?>
+        </div>
+    </div>
+    <table class="table table-bordered table-responsive-sm mt-2 table-hover">
+        <tr>
+            <th>No</th>
+            <th>Nama Barang</th>
+            <th>Keterangan</th>
+            <th>Kategori</th>
+            <th>Harga</th>
+            <th>Stok</th>
+            <th colspan="3">Aksi</th>
+        </tr>
+        <?php
+        $nomor = 1;
+        foreach ($barang as $brg) :
+        ?>
+            <tr>
+                <td><?php echo $nomor; ?></td>
+                <td><?php echo $brg->nama_brg; ?></td>
+                <td><?php echo $brg->keterangan; ?></td>
+                <td><?php echo $brg->kategori; ?></td>
+                <td><?php echo $brg->harga; ?></td>
+                <td><?php echo $brg->stok; ?></td>
+                <td><?php echo anchor('admin/data_barang/detail/' . $brg->id_brg, '<div class="btn btn-success btn-sm"><i class="fas fa-search-plus"  title="Detail"></i></div>'); ?>
+
+                </td>
+                <td><?php echo anchor('admin/data_barang/edit/' . $brg->id_brg, '<div class="btn btn-primary btn-sm" title="Edit"><i class="fa fa-edit"></i></div>'); ?>
+
+                </td>
+                <td onclick="javascript:return confirm('Konfirmasi Hapus Produk ?');"><?php echo anchor('admin/data_barang/hapus/' . $brg->id_brg, '<div class="btn btn-danger btn-sm" title="Hapus"><i class="fa fa-trash"></i></div>'); ?>
+
+                </td>
+            </tr>
+        <?php
+            $nomor++;
+        endforeach; ?>
+    </table>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="tambahbarang" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Form Tambah Produk</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
                 </button>
-              </div>');
+            </div>
+            <div class="modal-body">
+                <form action="<?php echo base_url() . 'admin/data_barang/tambah_aksi'; ?>" method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="namabrg">Nama Barang</label>
+                        <input type="text" class="form-control" name="nama_brg" required oninvalid="this.setCustomValidity('isi dulu nama produknya !')" oninput="setCustomValidity('')">
+                    </div>
+                    <div class="form-group">
+                        <label for="ket">Keterangan</label>
+                        <input type="text" class="form-control" name="keterangan" required oninvalid="this.setCustomValidity('isi dulu deskripsi produknya !')" oninput="setCustomValidity('')">
+                    </div>
 
-              redirect('auth/login');
-            }
-        }
+                    <div class="form-group">
+                        <label for="kat">Kategori</label>
+                        <!--  <input type="text" class="form-control" name="kategori">-->
+                        <select name="kategori" class="form-control">
+                            <option value="Pie">Pie</option>
+                            <option value="Keripik">Keripik</option>
+                            <option value="Bakso">Bakso Kemasan</option>
+                            <option value="Sambal">Sambal</option>
+                            <option value="Tanpa Kategori">Tanpa Kategori</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="hrg">Harga</label>
+                        <input type="number" class="form-control" name="harga" required oninvalid="this.setCustomValidity('isi dulu harga produknya !')" oninput="setCustomValidity('')">
+                    </div>
+                    <div class="form-group">
+                        <label for="stk">Stok</label>
+                        <input type="number" class="form-control" name="stok" required oninvalid="this.setCustomValidity('isi dulu stok produknya !')" oninput="setCustomValidity('')">
+                    </div>
+                    <div class="form-group">
+                        <label for="foto">Foto Produk</label>
+                        <input type="file" class="form-control" name="gambar_brg">
+                    </div>
 
-        // function tampilan awal di bagian admin untuk barang
-        public function index(){
-            // Memanggil function tampil data dari model barang yang telah dibuat querynya
-            $data['barang']=$this->model_barang->tampil_data()->result();
-
-            // Memanggil view dari template yang telah disediakan
-            $this->load->view('templates_admin/header');
-            $this->load->view('templates_admin/sidebar');
-            $this->load->view('admin/data_barang',$data);
-            $this->load->view('templates_admin/footer');
-        }
-
-        // function untuk menambahkan barang ke dalam database 
-        public function tambah_aksi(){
-            // mengambil data yang dikirimkan dari form view yang telah di inputkan kedalam sebuah variabel
-            $nama_brg       = $this->input->post('nama_brg');
-            $keterangan       = $this->input->post('keterangan');
-            $kategori       = $this->input->post('kategori');
-            $harga       = $this->input->post('harga');
-            $stok       = $this->input->post('stok');
-            $gbr_brg       = $_FILES['gambar_brg']['name'];
-
-            if($gbr_brg=''){}else{
-                $config['upload_path']='./uploads/';
-                $config['allowed_types']='jpg|jpeg|png|gif';
-
-                $this->load->library('upload',$config);
-                if(!$this->upload->do_upload('gambar_brg')){
-                   $gbr_brg='image.jpg';
-                }else{
-                    $gbr_brg=$this->upload->data('file_name');
-                }
-
-            }
-
-            // Menyimpan variabel yang telah di terima dari view untuk dimasukan kedalam array
-            $data=array(
-                'nama_brg'          =>$nama_brg,
-                'keterangan'          =>$keterangan,
-                'kategori'          =>$kategori,
-                'harga'          =>$harga,
-                'stok'          =>$stok,
-                'gambar'          =>$gbr_brg,
-            );
-            // exsekusi query dari model barang ke dalam database 
-            $this->model_barang->tambah_barang($data,'tb_barang');
-           
-            // return ke index barang
-            redirect('admin/data_barang/index');
-        }
-
-
-        // Funtion untuk menampilkan barang yang akan di edit ke dalam form view barang,
-        public function edit($id){
-            // menyimpan id barang yang dikirimkan dari function update kedalam sebuah variabel
-            $where = array('id_brg'=>$id);
-            // eksekusi mencari data yang sesuai denganid yang telah di inputkan
-            $data['barang']=$this->model_barang->edit_barang($where,'tb_barang')->result();
-
-            // Memanggil view dari edit barang dan kawan-kawan
-            $this->load->view('templates_admin/header');
-            $this->load->view('templates_admin/sidebar');
-            $this->load->view('admin/edit_barang',$data);
-            $this->load->view('templates_admin/footer');
-        }
-
-        // Function untu kupdate barang 
-        public function update(){
-            // menyimpan inputand data dari form ke dalam id variabel 
-            $id             =$this->input->post('idbrg');
-            $nama_brg             =$this->input->post('nama_brg');
-            $keterangan             =$this->input->post('keterangan');
-            $kategori             =$this->input->post('kategori');
-            $harga             =$this->input->post('harga');
-            $stok             =$this->input->post('stok');
-            $gbr_brgskrg             =$this->input->post('fotoskr');
-            $gbr_brg             =$_FILES['gambar_brg'];
-    
-            if($gbr_brg=''){}else{
-                $config['upload_path']='./uploads/';
-                $config['allowed_types']='jpg|jpeg|png|gif';
-
-                $this->load->library('upload',$config);
-                if(!$this->upload->do_upload('gambar_brg')){
-                   $gbr_brg=$gbr_brgskrg;
-                }else{
-                    $gbr_brg=$this->upload->data('file_name');
-                }
-
-            }
-
-            // Menyimpan variabel ke dalam array
-            $data=array(
-                'nama_brg'          =>$nama_brg,
-                'keterangan'          =>$keterangan,
-                'kategori'          =>$kategori,
-                'harga'          =>$harga,
-                'stok'          =>$stok,
-                'gambar'          =>$gbr_brg,
-            );
-            $where=array(
-                'id_brg' =>$id,
-            );
-
-            // eksekusi query untuk update melalui model yang telah di buat
-            $this->model_barang->update_data($where,$data,'tb_barang');
-            redirect('admin/data_barang/index');
-        }
-
-        // Hapus data
-        public function hapus($id){
-            // menyimpan id kedalam varible
-            $where=array('id_brg'=>$id);
-            // Eksekusi query hapus melalui model yang telah di buat
-            $this->model_barang->hapus_data($where,'tb_barang');
-            redirect('admin/data_barang/index');
-        }
-
-        // Detail barang
-        public function detail($id){
-            // meload model barang
-            $this->load->model('model_barang');
-            /// meyimpan id kedalam variabel 
-            $detilnya=$this->model_barang->detil_barang($id);
-            // menyumpan variabel ke dalam array untuk dikirimkan ke view detail_barang
-            $data['detil']=$detilnya;
-
-            // Load view
-            $this->load->view('templates_admin/header');
-            $this->load->view('templates_admin/sidebar');
-            $this->load->view('admin/detil_barang',$data);
-            $this->load->view('templates_admin/footer');
-        }
-
-        // funcion search 
-        public function cari(){
-            // Menyimpan kata kunci dari view kedalam variabel
-            $key=$this->input->post('katakunci');
-
-            // Dilanjutkan penyimpanan ke dalam aray untuk dikirimkan ke view data_barang
-            $data['barang']=$this->model_barang->get_key($key);
-
-            // Load view
-            $this->load->view('templates_admin/header');
-            $this->load->view('templates_admin/sidebar');
-            $this->load->view('admin/data_barang',$data);
-            $this->load->view('templates_admin/footer');
-        
-        }
-    }
-?>
+            </div>
+            <div class="modal-footer">
+                <button type="reset" class="btn btn-warning" data-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-success">Simpan Produk</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
